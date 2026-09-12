@@ -1,0 +1,81 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+####################################################
+#                      PYTHON                      #
+####################################################
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# SQLite dev fallback (if used locally)
+*.db
+*.sqlite3
+
+####################################################
+#                    KUBERNETES                    #
+####################################################
+
+# Kubernetes secrets
+**/secret.yaml
+**/secrets.yaml
+**/*-secret.yaml
+**/*-secrets.yaml
+
+# Environment files
+.env
+.env.*
+
+# Kubernetes/Kind local files
+.kube/
+*.kubeconfig
+
+# Helm
+*.tgz
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
