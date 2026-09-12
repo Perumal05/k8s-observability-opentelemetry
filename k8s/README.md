@@ -31,7 +31,7 @@ Verify the cluster:
 kubectl get nodes
 ```
 
-<img src="images/kind_cluster.png" alt="Kind Kubernetes cluster" width="600">
+<img src="../images/kind_cluster.png" alt="Kind Kubernetes cluster" width="600">
 
 ---
 
@@ -73,7 +73,7 @@ Check the PostgreSQL resources:
 kubectl get pods -n opsdesk
 ```
 
-<img src="images/postgres_k8s_output.png" alt="PostgreSQL deployment on Kubernetes" width="600">
+<img src="../images/postgres_k8s_output.png" alt="PostgreSQL deployment on Kubernetes" width="600">
 
 ---
 
@@ -95,13 +95,7 @@ kind load docker-image opsdesk/frontend:0.1 --name opentelemetry
 kind load docker-image opsdesk/backend:0.1 --name opentelemetry
 ```
 
-Verify the images:
-
-```bash
-docker exec -it opentelemetry-control-plane crictl images
-```
-
-<img src="images/kind_images.png" alt="Docker images loaded into Kind cluster" width="600">
+<img src="../images/kind_images.png" alt="Docker images loaded into Kind cluster" width="600">
 
 ---
 
@@ -126,7 +120,7 @@ kubectl get pods -n opsdesk
 kubectl get services -n opsdesk
 ```
 
-<img src="images/frontend_backend.png" alt="Frontend and backend Kubernetes deployment" width="600">
+<img src="../images/frontend_backend.png" alt="Frontend and backend Kubernetes deployment" width="600">
 
 ---
 
@@ -140,7 +134,7 @@ Open the application in your browser:
 http://localhost:30080/
 ```
 
-<img src="images/nodeport_output.png" alt="OpsDesk application accessed through NodePort" width="600">
+<img src="../images/nodeport_output.png" alt="OpsDesk application accessed through NodePort" width="600">
 
 ---
 
