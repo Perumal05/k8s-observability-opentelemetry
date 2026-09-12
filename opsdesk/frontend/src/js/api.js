@@ -1,9 +1,11 @@
 /**
  * OpsDesk API Client
  */
-const API_BASE = window.location.origin.includes(':3000') || window.location.origin.includes(':8080')
-  ? '' // In Docker/NGINX proxy setups, API is relative
-  : 'http://localhost:8000'; // Default fallback for local dev
+// In NGINX / Kubernetes / Docker environments, API requests are routed relatively via reverse proxy (/api/*).
+// Only fallback to absolute URL if served directly on port 8000 (backend dev server) or file protocol.
+const API_BASE = (window.location.protocol === 'file:' || window.location.port === '8000')
+  ? 'http://localhost:8000'
+  : '';
 
 class ApiService {
   static async request(endpoint, options = {}) {
