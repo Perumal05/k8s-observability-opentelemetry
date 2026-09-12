@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpsDesk — IT Incident Management System</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">OD</div>
+        <div class="brand-name">OpsDesk</div>
+        <span class="brand-tag">v1.0</span>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </button>
+        <button class="nav-item" data-view="incidents">
+          <span class="nav-icon">📋</span> All Incidents
+        </button>
+        <button class="nav-item" data-view="create">
+          <span class="nav-icon">➕</span> Create Incident
+        </button>
+        <button class="nav-item" data-view="health">
+          <span class="nav-icon">⚡</span> System Status
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="cluster-badge">
+          <span class="pulse-dot"></span>
+          <div>
+            <div style="font-weight: 600; color: var(--text-primary);">Service Desk</div>
+            <div style="font-size: 11px;">Operational</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="page-title-area">
+          <h1 id="header-title">Operations Dashboard</h1>
+        </div>
+        <div class="topbar-actions">
+          <a href="/docs" target="_blank" class="btn btn-secondary btn-sm" title="View OpenAPI Swagger Documentation">
+            📖 API Docs
+          </a>
+          <button class="btn btn-primary btn-sm" onclick="App.switchView('create')">
+            + New Incident
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Views Container -->
+      <main class="content-area">
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="view-dashboard" class="view-section active">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Total Incidents</span>
+              <span class="kpi-value" id="kpi-total">0</span>
+              <span class="kpi-sub">All-time tickets</span>
+            </div>
+            <div class="kpi-card open">
+              <span class="kpi-label">Open / Active</span>
+              <span class="kpi-value" id="kpi-open" style="color: var(--status-open);">0</span>
+              <span class="kpi-sub">Needs attention</span>
+            </div>
+            <div class="kpi-card critical">
+              <span class="kpi-label">Critical Active</span>
+              <span class="kpi-value" id="kpi-critical" style="color: var(--priority-critical);">0</span>
+              <span class="kpi-sub">Severity P1</span>
+            </div>
+            <div class="kpi-card resolved">
+              <span class="kpi-label">Resolved</span>
+              <span class="kpi-value" id="kpi-resolved" style="color: var(--status-resolved);">0</span>
+              <span class="kpi-sub">Successfully closed</span>
+            </div>
+            <div class="kpi-card today">
+              <span class="kpi-label">Created Today</span>
+              <span class="kpi-value" id="kpi-today" style="color: #c084fc;">0</span>
+              <span class="kpi-sub">Last 24h</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Mean Time To Resolve</span>
+              <span class="kpi-value" id="kpi-mttr">0m</span>
+              <span class="kpi-sub">Avg duration</span>
+            </div>
+          </div>
+
+          <div class="dashboard-row">
+            <!-- Recent Incidents Table -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Recent Incidents</div>
+                <button class="btn btn-secondary btn-sm" onclick="App.switchView('incidents')">View All</button>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Title</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-incidents-body">
+                    <tr><td colspan="5" class="empty-state">Loading recent incidents...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Priority & Status Breakdowns -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <div class="card">
+                <div class="card-title" style="margin-bottom: 16px;">By Priority</div>
+                <div id="priority-breakdown" class="stat-bar-group">
+                  <div class="empty-state">Loading...</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title" style="margin-bottom: 16px;">By Status</div>
+                <div id="status-breakdown" class="stat-bar-group">
+                  <div class="empty-state">Loading...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. INCIDENTS LIST VIEW -->
+        <section id="view-incidents" class="view-section">
+          <div class="toolbar">
+            <div class="filters-group">
+              <div class="search-input-wrapper">
+                <input type="text" id="search-incidents" class="form-control" placeholder="Search by title, ID, description...">
+              </div>
+              <select id="filter-status" class="form-control" style="width: 140px;">
+                <option value="">All Statuses</option>
+                <option value="OPEN">OPEN</option>
+                <option value="IN_PROGRESS">IN PROGRESS</option>
+                <option value="PENDING">PENDING</option>
+                <option value="RESOLVED">RESOLVED</option>
+                <option value="CLOSED">CLOSED</option>
+              </select>
+              <select id="filter-priority" class="form-control" style="width: 140px;">
+                <option value="">All Priorities</option>
+                <option value="CRITICAL">CRITICAL</option>
+                <option value="HIGH">HIGH</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="LOW">LOW</option>
+              </select>
+              <select id="filter-category" class="form-control" style="width: 140px;">
+                <option value="">All Categories</option>
+                <option value="NETWORK">NETWORK</option>
+                <option value="DATABASE">DATABASE</option>
+                <option value="APPLICATION">APPLICATION</option>
+                <option value="SECURITY">SECURITY</option>
+                <option value="HARDWARE">HARDWARE</option>
+                <option value="OTHER">OTHER</option>
+              </select>
+              <button class="btn btn-primary" onclick="IncidentsController.applyFilters()">Filter</button>
+              <button class="btn btn-secondary" onclick="IncidentsController.resetFilters()">Reset</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Incident ID</th>
+                  <th>Title & Category</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Assigned To</th>
+                  <th>Created</th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody id="incidents-table-body">
+                <tr><td colspan="7" class="empty-state">Loading incidents...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-container">
+            <span id="pagination-info">Showing incidents...</span>
+            <div style="display: flex; gap: 8px;">
+              <button id="btn-prev-page" class="btn btn-secondary btn-sm" onclick="IncidentsController.prevPage()">Previous</button>
+              <button id="btn-next-page" class="btn btn-secondary btn-sm" onclick="IncidentsController.nextPage()">Next</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. CREATE INCIDENT VIEW -->
+        <section id="view-create" class="view-section">
+          <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <div class="card-title" style="margin-bottom: 20px;">Report New Operational Incident</div>
+            <form id="create-incident-form">
+              <div class="form-grid">
+                <div class="form-group form-group-full">
+                  <label for="create-title">Incident Title *</label>
+                  <input type="text" id="create-title" class="form-control" placeholder="e.g. Postgres Connection Pool Exhaustion on Node 02" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="create-priority">Priority *</label>
+                  <select id="create-priority" class="form-control" required>
+                    <option value="LOW">LOW</option>
+                    <option value="MEDIUM" selected>MEDIUM</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="CRITICAL">CRITICAL</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="create-category">Category *</label>
+                  <select id="create-category" class="form-control" required>
+                    <option value="APPLICATION" selected>APPLICATION</option>
+                    <option value="DATABASE">DATABASE</option>
+                    <option value="NETWORK">NETWORK</option>
+                    <option value="SECURITY">SECURITY</option>
+                    <option value="HARDWARE">HARDWARE</option>
+                    <option value="OTHER">OTHER</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="create-reporter">Reporter *</label>
+                  <select id="create-reporter" class="form-control" required>
+                    <option value="">Loading reporters...</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="create-assignee">Assign Technician</label>
+                  <select id="create-assignee" class="form-control">
+                    <option value="">-- Unassigned --</option>
+                  </select>
+                </div>
+
+                <div class="form-group form-group-full">
+                  <label for="create-description">Detailed Description & Symptoms *</label>
+                  <textarea id="create-description" class="form-control" placeholder="Provide diagnostic details, error messages, and impact..." required></textarea>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" onclick="App.switchView('incidents')">Cancel</button>
+                <button type="submit" id="btn-submit-incident" class="btn btn-primary">Create Incident</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- 4. INCIDENT DETAILS VIEW -->
+        <section id="view-detail" class="view-section">
+          <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <button class="btn btn-secondary btn-sm" onclick="App.switchView('incidents')">← Back to Incidents</button>
+            <button class="btn btn-danger btn-sm" onclick="IncidentDetailController.deleteCurrentIncident()">Delete Incident</button>
+          </div>
+
+          <div class="detail-layout">
+            <!-- Left Column: Details & Comments -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                  <div>
+                    <span id="detail-incident-number" style="font-size: 14px; font-weight: 700; color: var(--primary);">INC-1001</span>
+                    <h2 id="detail-title" style="font-size: 20px; font-weight: 600; margin-top: 4px;">Incident Title</h2>
+                  </div>
+                  <span id="detail-category" class="category-tag">APPLICATION</span>
+                </div>
+
+                <div style="background-color: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 20px;">
+                  <label style="display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 6px;">Description</label>
+                  <div id="detail-desc" style="white-space: pre-wrap; font-size: 14px;">Description text...</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; font-size: 13px;">
+                  <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 11px;">Reporter</span>
+                    <strong id="detail-reporter">-</strong>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 11px;">Created At</span>
+                    <span id="detail-created">-</span>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 11px;">Resolved At</span>
+                    <span id="detail-resolved">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Comments Section -->
+              <div class="card">
+                <div class="card-title" style="margin-bottom: 16px;">Incident Comments</div>
+                
+                <div id="detail-comments-list" style="margin-bottom: 20px;">
+                  <div class="empty-state">Loading comments...</div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <textarea id="new-comment-text" class="form-control" style="min-height: 80px;" placeholder="Add technician investigation notes or update comment..."></textarea>
+                  <div style="display: flex; justify-content: flex-end;">
+                    <button class="btn btn-primary btn-sm" onclick="IncidentDetailController.submitComment()">Post Comment</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Fast Controls & Audit Timeline -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <!-- Quick Management Controls -->
+              <div class="card">
+                <div class="card-title" style="margin-bottom: 16px;">Manage Incident</div>
+
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                  <div class="form-group">
+                    <label>Status</label>
+                    <div style="display: flex; gap: 8px;">
+                      <select id="detail-status-select" class="form-control">
+                        <option value="OPEN">OPEN</option>
+                        <option value="IN_PROGRESS">IN PROGRESS</option>
+                        <option value="PENDING">PENDING</option>
+                        <option value="RESOLVED">RESOLVED</option>
+                        <option value="CLOSED">CLOSED</option>
+                      </select>
+                      <button class="btn btn-secondary btn-sm" onclick="IncidentDetailController.updateStatus()">Update</button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Priority</label>
+                    <div style="display: flex; gap: 8px;">
+                      <select id="detail-priority-select" class="form-control">
+                        <option value="LOW">LOW</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                        <option value="HIGH">HIGH</option>
+                        <option value="CRITICAL">CRITICAL</option>
+                      </select>
+                      <button class="btn btn-secondary btn-sm" onclick="IncidentDetailController.updatePriority()">Update</button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Assigned Technician</label>
+                    <div style="display: flex; gap: 8px;">
+                      <select id="detail-assignee-select" class="form-control">
+                        <option value="">-- Unassigned --</option>
+                      </select>
+                      <button class="btn btn-secondary btn-sm" onclick="IncidentDetailController.updateAssignee()">Assign</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- History Timeline -->
+              <div class="card">
+                <div class="card-title" style="margin-bottom: 12px;">Activity Timeline</div>
+                <div id="detail-timeline-list" class="timeline">
+                  <div class="empty-state">Loading timeline...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. SYSTEM HEALTH VIEW -->
+        <section id="view-health" class="view-section">
+          <div class="health-status-grid">
+            <div class="health-badge-box">
+              <span id="health-api-indicator" class="health-indicator"></span>
+              <div>
+                <div style="font-weight: 600;">FastAPI Application</div>
+                <div id="health-api-text" style="font-size: 12px; color: var(--text-secondary);">Checking...</div>
+              </div>
+            </div>
+
+            <div class="health-badge-box">
+              <span id="health-db-indicator" class="health-indicator"></span>
+              <div>
+                <div style="font-weight: 600;">PostgreSQL Database</div>
+                <div id="health-db-text" style="font-size: 12px; color: var(--text-secondary);">Checking...</div>
+              </div>
+            </div>
+
+            <div class="health-badge-box">
+              <div>
+                <div style="font-weight: 600;">Environment</div>
+                <div id="sys-env" style="font-size: 12px; color: var(--primary);">DEVELOPMENT</div>
+              </div>
+            </div>
+
+            <div class="health-badge-box">
+              <div>
+                <div style="font-weight: 600;">Server Uptime</div>
+                <div id="sys-uptime" style="font-size: 12px; color: var(--text-secondary);">0s</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 16px;">Application Diagnostics</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; font-size: 13px;">
+              <div style="background: rgba(15, 23, 42, 0.4); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <span style="color: var(--text-muted); display: block; font-size: 11px;">Version</span>
+                <strong id="sys-version">1.0.0</strong>
+              </div>
+              <div style="background: rgba(15, 23, 42, 0.4); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <span style="color: var(--text-muted); display: block; font-size: 11px;">Architecture</span>
+                <strong>Monolithic (FastAPI + PostgreSQL + NGINX)</strong>
+              </div>
+              <div style="background: rgba(15, 23, 42, 0.4); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <span style="color: var(--text-muted); display: block; font-size: 11px;">Database Driver</span>
+                <strong>PostgreSQL (SQLAlchemy 2.0)</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div id="toast-container"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/incidents.js"></script>
+  <script src="js/incident-detail.js"></script>
+  <script src="js/create-incident.js"></script>
+  <script src="js/health.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: opsdesk-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: opsdesk
+      POSTGRES_USER: opsdesk
+      POSTGRES_PASSWORD: opsdesk_secret_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opsdesk -d opsdesk"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: opsdesk/backend:0.1
+    container_name: opsdesk-backend
+    restart: unless-stopped
+    environment:
+      APP_NAME: opsdesk
+      APP_ENV: development
+      APP_PORT: 8000
+      DEBUG: "true"
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: opsdesk
+      DATABASE_USER: opsdesk
+      DATABASE_PASSWORD: opsdesk_secret_password
+      BACKGROUND_JOB_INTERVAL_SECONDS: 60
+      CORS_ORIGINS: "http://localhost,http://localhost:80,http://localhost:8080,http://127.0.0.1:8080"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: opsdesk/frontend:0.1
+    container_name: opsdesk-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
