@@ -76,8 +76,8 @@ opsdesk/
 │   │   ├── logging_config.py        # Standard structured application logging
 │   │   └── main.py                  # FastAPI lifespan & application init
 │   ├── requirements.txt
-│   ├── Dockerfile
-│   └── README.md
+│   └── Dockerfile
+│   
 ├── frontend/
 │   ├── src/
 │   │   ├── css/styles.css           # Responsive IT Operations theme
@@ -92,14 +92,7 @@ opsdesk/
 │   │   └── index.html               # SPA Interface
 │   ├── nginx.conf                   # NGINX reverse proxy configuration
 │   └── Dockerfile
-├── k8s/                             # Kubernetes manifests
-│   ├── namespace.yaml
-│   ├── secret.yaml
-│   ├── configmap.yaml
-│   ├── postgres.yaml                # PostgreSQL PVC + Deployment + Service
-│   ├── backend.yaml                 # Backend Deployment (probes & limits) + Service
-│   ├── frontend.yaml                # NGINX Deployment + NodePort Service
-│   └── kustomization.yaml
+|
 ├── docker-compose.yml               # Local multi-container development
 ├── .env.example
 ├── .gitignore
@@ -171,8 +164,7 @@ Start all containers (PostgreSQL, Backend, Frontend) with a single command:
 
 ```bash
 cd opsdesk
-docker compose build --progress=plain
-docker compose up -d 
+docker compose up --build
 ```
 
 ### Accessing Services
@@ -185,3 +177,5 @@ To shut down:
 ```bash
 docker compose down -v
 ```
+
+
