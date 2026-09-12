@@ -63,14 +63,19 @@ class IncidentsController {
 
   static renderPagination(response) {
     const pageInfo = document.getElementById('pagination-info');
-    const start = (response.page - 1) * response.limit + 1;
-    const end = Math.min(response.page * response.limit, response.total);
-    pageInfo.textContent = response.total > 0
-      ? `Showing ${start} to ${end} of ${response.total} incidents`
-      : `0 incidents`;
+    if (pageInfo) {
+      const start = (response.page - 1) * response.limit + 1;
+      const end = Math.min(response.page * response.limit, response.total);
+      pageInfo.textContent = response.total > 0
+        ? `Showing ${start} to ${end} of ${response.total} incidents`
+        : `0 incidents`;
+    }
 
-    document.getElementById('btn-prev-page').disabled = response.page <= 1;
-    document.getElementById('btn-next-page').disabled = response.page >= response.pages;
+    const prevBtn = document.getElementById('btn-prev-page');
+    if (prevBtn) prevBtn.disabled = response.page <= 1;
+
+    const nextBtn = document.getElementById('btn-next-page');
+    if (nextBtn) nextBtn.disabled = response.page >= response.pages;
   }
 
   static prevPage() {
@@ -90,10 +95,14 @@ class IncidentsController {
   }
 
   static resetFilters() {
-    document.getElementById('filter-status').value = '';
-    document.getElementById('filter-priority').value = '';
-    document.getElementById('filter-category').value = '';
-    document.getElementById('search-incidents').value = '';
+    const st = document.getElementById('filter-status');
+    if (st) st.value = '';
+    const pr = document.getElementById('filter-priority');
+    if (pr) pr.value = '';
+    const cat = document.getElementById('filter-category');
+    if (cat) cat.value = '';
+    const srch = document.getElementById('search-incidents');
+    if (srch) srch.value = '';
     this.load(1);
   }
 }

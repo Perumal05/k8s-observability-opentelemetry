@@ -24,33 +24,41 @@ class IncidentDetailController {
   }
 
   static renderIncidentDetails(incident, users) {
-    document.getElementById('detail-incident-number').textContent = incident.incident_number;
-    document.getElementById('detail-title').textContent = incident.title;
-    document.getElementById('detail-desc').textContent = incident.description;
-    document.getElementById('detail-category').textContent = incident.category;
-    document.getElementById('detail-reporter').textContent = incident.reporter ? incident.reporter.name : 'Unknown';
-    document.getElementById('detail-created').textContent = App.formatDate(incident.created_at);
-    document.getElementById('detail-updated').textContent = App.formatDate(incident.updated_at);
-    document.getElementById('detail-resolved').textContent = incident.resolved_at ? App.formatDate(incident.resolved_at) : 'Not Resolved';
+    const setElemText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    setElemText('detail-incident-number', incident.incident_number || '');
+    setElemText('detail-title', incident.title || '');
+    setElemText('detail-desc', incident.description || '');
+    setElemText('detail-category', incident.category || '');
+    setElemText('detail-reporter', incident.reporter ? incident.reporter.name : 'Unknown');
+    setElemText('detail-created', App.formatDate(incident.created_at));
+    setElemText('detail-updated', App.formatDate(incident.updated_at));
+    setElemText('detail-resolved', incident.resolved_at ? App.formatDate(incident.resolved_at) : 'Not Resolved');
 
     // Status Badge & Dropdown
     const statusSelect = document.getElementById('detail-status-select');
-    statusSelect.value = incident.status;
+    if (statusSelect) statusSelect.value = incident.status;
 
     // Priority Badge & Dropdown
     const prioritySelect = document.getElementById('detail-priority-select');
-    prioritySelect.value = incident.priority;
+    if (prioritySelect) prioritySelect.value = incident.priority;
 
     // Assignee Dropdown
     const assigneeSelect = document.getElementById('detail-assignee-select');
-    const technicians = users.filter(u => u.role === 'TECHNICIAN' || u.role === 'MANAGER');
-    assigneeSelect.innerHTML = `<option value="">-- Unassigned --</option>` +
-      technicians.map(t => `<option value="${t.id}" ${incident.assigned_to === t.id ? 'selected' : ''}>${t.name} (${t.role})</option>`).join('');
+    if (assigneeSelect) {
+      const technicians = (users || []).filter(u => u.role === 'TECHNICIAN' || u.role === 'MANAGER');
+      assigneeSelect.innerHTML = `<option value="">-- Unassigned --</option>` +
+        technicians.map(t => `<option value="${t.id}" ${incident.assigned_to === t.id ? 'selected' : ''}>${t.name} (${t.role})</option>`).join('');
+    }
   }
 
   static renderComments(comments, users) {
     const list = document.getElementById('detail-comments-list');
-    if (!comments.length) {
+    if (!list) return;
+    if (!comments || !comments.length) {
       list.innerHTML = `<div class="empty-state" style="padding: 16px;">No comments yet.</div>`;
       return;
     }
@@ -68,7 +76,8 @@ class IncidentDetailController {
 
   static renderTimeline(history) {
     const list = document.getElementById('detail-timeline-list');
-    if (!history.length) {
+    if (!list) return;
+    if (!history || !history.length) {
       list.innerHTML = `<div class="empty-state" style="padding: 16px;">No history recorded.</div>`;
       return;
     }

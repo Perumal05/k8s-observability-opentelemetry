@@ -15,12 +15,16 @@ class CreateIncidentController {
     const reporterSelect = document.getElementById('create-reporter');
     const assigneeSelect = document.getElementById('create-assignee');
 
-    const reporters = users.filter(u => u.role === 'REPORTER' || u.role === 'MANAGER');
-    const technicians = users.filter(u => u.role === 'TECHNICIAN' || u.role === 'MANAGER');
+    const reporters = (users || []).filter(u => u.role === 'REPORTER' || u.role === 'MANAGER');
+    const technicians = (users || []).filter(u => u.role === 'TECHNICIAN' || u.role === 'MANAGER');
 
-    reporterSelect.innerHTML = reporters.map(r => `<option value="${r.id}">${r.name} (${r.role})</option>`).join('');
-    assigneeSelect.innerHTML = `<option value="">-- Unassigned --</option>` +
-      technicians.map(t => `<option value="${t.id}">${t.name} (${t.role})</option>`).join('');
+    if (reporterSelect) {
+      reporterSelect.innerHTML = reporters.map(r => `<option value="${r.id}">${r.name} (${r.role})</option>`).join('');
+    }
+    if (assigneeSelect) {
+      assigneeSelect.innerHTML = `<option value="">-- Unassigned --</option>` +
+        technicians.map(t => `<option value="${t.id}">${t.name} (${t.role})</option>`).join('');
+    }
   }
 
   static async submit(event) {
