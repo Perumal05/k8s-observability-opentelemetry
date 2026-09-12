@@ -1,0 +1,32 @@
+# certManager:
+#   enabled: false
+
+# autoGenerateCert:
+#   enabled: true
+#   recreate: true
+#   certPeriodDays: 365
+
+# admissionWebhooks:
+#   create: true
+#   failurePolicy: Fail
+#   pods:
+#     failurePolicy: Ignore
+
+# crds:
+#   create: true
+
+admissionWebhooks:
+  create: true
+  servicePort: 443
+  failurePolicy: Fail
+
+  certManager:
+    enabled: false
+
+  autoGenerateCert:
+    enabled: true
+    recreate: true
+    certPeriodDays: 365
+
+crds:
+  create: true
