@@ -153,7 +153,7 @@ opsdesk/
 * Form with input validation.
 * Category, priority, reporter, and technician selection.
 
-<img src="../images/create_incident.png" alt="OpsDesk Create Incident" width="700">
+<img src="../images/incident_create.png" alt="OpsDesk Create Incident" width="700">
 
 ---
 
