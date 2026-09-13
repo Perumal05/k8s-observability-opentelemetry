@@ -129,7 +129,7 @@ kubectl get svc -n observability
 
 ![Jaeger Verification](../../images/jaeger_verify.png)
 
-For the Jaeger configuration, see [jaegar-notes.md](./jaegar-notes.md).
+For the Jaeger configuration, see [jaeger-notes.md](./jaeger-notes.md).
 
 ## 6. Verify Jaeger UI
 
@@ -235,4 +235,4 @@ Detailed configuration and explanations are maintained separately:
 
 * [OpenTelemetry Operator Notes](./otel-operator-notes.md)
 * [OpenTelemetry Collector Notes](./otel-collector-notes.md)
-* [Jaeger Notes](./jaegar-notes.md)
+* [Jaeger Notes](./jaeger-notes.md)
