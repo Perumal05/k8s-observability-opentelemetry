@@ -1,0 +1,12 @@
+jaeger:
+  enabled: true
+  replicas: 1
+
+  service:
+    annotations: {}
+
+  ingress:
+    enabled: false
+
+networkPolicy:
+  enabled: false

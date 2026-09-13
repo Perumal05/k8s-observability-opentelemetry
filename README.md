@@ -188,3 +188,125 @@ helm upgrade --install opentelemetry-collector `
 So far opentelemtry setup completed architecute:
 
 <img src="images/otel-mid-setup.png" alt="Openteletemetry collector helm installation output" width="600">
+
+-------------------------
+
+Add the Jaeger Helm repository
+
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+helm repo update
+helm search repo jaegertracing
+
+<img src="images/jaeger_repo.png" alt="Jaegar Helm repo output" width="600">
+
+For our project, we should use jaegertracing/jaeger, not the Jaeger Operator. We already have the OpenTelemetry Operator installed. Its job is to handle OpenTelemetry resources and automatic instrumentation.
+
+Install Jeaeger:
+
+helm upgrade --install jaeger `
+  jaegertracing/jaeger `
+  --namespace observability `
+  --version 4.13.1 `
+  --values observability/opentelemetry/jaeger-values.yaml
+
+verify 
+kubectl get pods -n observability
+kubectl get svc -n observability
+
+<img src="images/jaeger_verify.png" alt="Jeager helm installation output" width="600">
+
+Next: verify the Jaeger UI
+
+Port forward
+kubectl port-forward svc/jaeger 16686:16686 -n observability
+http://localhost:16686
+
+<img src="images/jaeger_ui.png" alt="Jaegar User Interface" width="600">
+
+Next: Collector → Jaeger
+
+We want to change the Collector's exporter from: debug to: Jaeger
+
+Since the Collector and Jaeger are in the same Kubernetes namespace (observability), the Collector can reach Jaeger using:
+
+jaeger:4317
+
+Update collector-values.yaml from
+
+Change this:
+
+exporters:
+  debug: {}
+
+to:
+
+exporters:
+  otlp:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+
+And change the traces pipeline from:
+
+exporters:
+  - debug
+
+to:
+
+exporters:
+  - otlp
+
+
+Why tls.insecure: true?
+
+This is only for our local Kubernetes environment.
+------
+
+Then upgrade the Collector
+
+helm upgrade --install opentelemetry-collector `
+  open-telemetry/opentelemetry-collector `
+  --namespace observability `
+  --version 0.173.1 `
+  --values observability/opentelemetry/collector-values.yaml
+
+Verify:
+
+kubectl get pods -n observability
+
+---
+
+Now we are going to auto instrument our backend deployment:
+
+Python auto-instrumentation through the OpenTelemetry Operator. We won't modify the FastAPI source or rebuild the existing image.
+
+we are going to create a insturmentation resource on the same namespace as our backend application.  This is the Yaml file location
+
+k8s/observability/opentelemetry/instrumentation.yaml
+
+where we'll explicitly point the instrumentation to opentelemetry collector service:
+
+http://opentelemetry-collector.observability.svc.cluster.local:4318
+
+Then apply it 
+
+kubectl apply -f ./observability/opentelemetry/instrumentation.yaml
+kubectl get instrumentation -n opsdesk
+
+on the opsdesk-backend deployment, lets add instrumentation annotation
+
+instrumentation.opentelemetry.io/inject-python: "opsdesk/opsdesk-python-instrumentation"
+
+<img src="images/instrumentation_annotation.png" alt="Instrumentation annotation" width="600">
+
+kubectl apply -f k8s/backend.yaml
+
+verify and note for init container section:
+
+kubectl describe pod -n opsdesk -l app.kubernetes.io/name=opsdesk-backend
+
+<img src="images/init_container.png" alt="Init container" width="600">
+
+Jaeger UI verification: you can see the opsdesk backend got listed in the UI
+
+<img src="images/Jaeger_ui_verification.png" alt="Init container" width="600">
