@@ -48,7 +48,15 @@ Since we exposed our frontend as nodeport, we can access the application using l
 
 http://localhost:30080/
 
-<img src="images/nodeport_output.png" alt="Deployment output of frontend and backend" width="700">
+<img src="images/nodeport_output.png" alt="Deployment output of frontend and backend" width="600">
+
+------------------------------------------------------------------
+
+OPENTELEMETRY:
+
+------------------------------------------------------------------
+
+<img src="images/otel_architecture.png" alt="Opentelemetry architecture" width="600">
 
 kubectl apply -f observability/namespace.yaml
 
@@ -310,3 +318,10 @@ kubectl describe pod -n opsdesk -l app.kubernetes.io/name=opsdesk-backend
 Jaeger UI verification: you can see the opsdesk backend got listed in the UI
 
 <img src="images/Jaeger_ui_verification.png" alt="Init container" width="600">
+
+---
+
+Metrcis Observability - Prometheus:
+
+helm search repo prometheus-community/kube-prometheus-stack
+helm show values prometheus-community/kube-prometheus-stack
